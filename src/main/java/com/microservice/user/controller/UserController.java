@@ -24,6 +24,7 @@ public class UserController {
     ResponseEntity<User> saveUser(@RequestBody User user) {
 
         User saveDepartment = userService.saveUser(user);
+        System.out.println("User Info"+saveDepartment.getEmail());
         rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE,RabbitMQConfig.ROUTING_KEY,saveDepartment.getDepartmentId());
         return new ResponseEntity<>(saveDepartment, HttpStatus.CREATED);
     }
