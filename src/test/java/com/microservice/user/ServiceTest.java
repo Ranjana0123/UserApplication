@@ -20,7 +20,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class ServiceTest {
@@ -41,7 +40,6 @@ public class ServiceTest {
         userSetup.setId(1L);
         userSetup.setFirstName("John");
         userSetup.setEmail("john@example.com");
-        when(webClientBuilder.build()).thenReturn(webClient);
         when(webClient.get().uri(anyString(), Optional.ofNullable(any())).retrieve().bodyToMono(User.class))
                 .thenReturn(Mono.just(userSetup));
 
