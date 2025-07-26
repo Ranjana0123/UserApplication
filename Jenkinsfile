@@ -1,28 +1,38 @@
 pipeline {
-	agent any
+    agent any
 
-	environment {
-		mavenHome = tool 'jenkins-maven'
-	}
-	stages {
+    tools {
+        maven 'jenkins-maven' // this matches the name in Jenkins' Global Tool Config
+    }
 
-		stage('Build'){
-			steps {
-				bat "mvn clean install -DskipTests"
-			}
-		}
+    environment {
+        MAVEN_HOME = tool 'jenkins-maven'
+        PATH = "${MAVEN_HOME}/bin;${env.PATH}"  // make sure mvn is available in PATH
+    }
 
-		stage('Test'){
-			steps{
-				bat "mvn test"
-			}
-		}
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
 
-		stage('Deploy') {
-			steps {
-			    bat "mvn jar:jar deploy:deploy"
-			}
-		}
-	}
+        stage('Build') {
+            steps {
+                bat 'mvn clean install -DskipTests'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                bat 'mvn test'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploy stage - add deployment logic here'
+            }
+        }
+    }
 }
-
