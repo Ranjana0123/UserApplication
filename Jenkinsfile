@@ -2,69 +2,67 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'userapp'
+        MAVEN_HOME = tool 'jenkins-maven' // Set this in Jenkins tools config
+        DOCKER_IMAGE = 'userapp-image'
         CONTAINER_NAME = 'userapp-container'
-        DOCKER_REGISTRY = '' // optional if pushing to registry
     }
 
     stages {
         stage('Checkout') {
             steps {
-                echo '📥 Checking out source code...'
                 checkout scm
             }
         }
 
-        stage('Build with Maven') {
+        stage('Build') {
             steps {
-                echo '🔧 Building the Spring Boot project...'
-                bat 'mvn clean package -DskipTests'
+                bat "${MAVEN_HOME}/bin/mvn clean install -DskipTests"
             }
         }
 
-        stage('Build Docker Image') {
-            steps {
-                echo '🐳 Building Docker image...'
-                bat "docker build -t %IMAGE_NAME% ."
-            }
-        }
+       stage('Build Docker Image') {
+                   steps {
+                       echo '🐳 Building Docker image...'
+                       bat "docker build -t %IMAGE_NAME% ."
+                   }
+               }
 
-        stage('Stop & Remove Existing Container') {
-            steps {
-                echo '🧹 Cleaning up old containers if any...'
-                bat '''
-                docker stop %CONTAINER_NAME%
-                IF %ERRORLEVEL% NEQ 0 (
-                    echo Container may not exist. Ignoring...
-                )
+               stage('Stop & Remove Existing Container') {
+                   steps {
+                       echo '🧹 Cleaning up old containers if any...'
+                       bat '''
+                       docker stop %CONTAINER_NAME%
+                       IF %ERRORLEVEL% NEQ 0 (
+                           echo Container may not exist. Ignoring...
+                       )
 
-                docker rm %CONTAINER_NAME%
-                IF %ERRORLEVEL% NEQ 0 (
-                    echo Container may already be removed. Ignoring...
-                )
+                       docker rm %CONTAINER_NAME%
+                       IF %ERRORLEVEL% NEQ 0 (
+                           echo Container may already be removed. Ignoring...
+                       )
 
-                exit 0
-                '''
-            }
-        }
+                       exit 0
+                       '''
+                   }
+               }
 
-        stage('Run Docker Container') {
-            steps {
-                echo '🚀 Starting Docker container...'
-                bat '''
-                docker run -d -p 8080:8080 --name %CONTAINER_NAME% %IMAGE_NAME%
-                '''
-            }
-        }
-    }
+               stage('Run Docker Container') {
+                   steps {
+                       echo '🚀 Starting Docker container...'
+                       bat '''
+                       docker run -d -p 8080:8080 --name %CONTAINER_NAME% %IMAGE_NAME%
+                       '''
+                   }
+               }
+           }
 
-    post {
-        success {
-            echo '✅ Build and deployment succeeded!'
-        }
+           post {
+               success {
+                   echo '✅ Build and deployment succeeded!'
+               }
 
-        failure {
-            echo '❌ Build Failed ❌'
-        }
-    }
-}
+               failure {
+                   echo '❌ Build Failed ❌'
+               }
+           }
+       }
