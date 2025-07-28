@@ -32,8 +32,10 @@ pipeline {
             steps {
                 script {
                     // Stop and remove old container if exists
-                    bat "docker stop ${CONTAINER_NAME} || true"
-                    bat "docker rm ${CONTAINER_NAME} || true"
+                   bat '''
+                   docker stop userapp-container
+                   IF %ERRORLEVEL% NEQ 0 echo Container may not exist. Ignoring...
+                   '''
 
                     // Run new container
                     bat "docker run -d -p 8080:8080 --name ${CONTAINER_NAME} ${DOCKER_IMAGE}"
