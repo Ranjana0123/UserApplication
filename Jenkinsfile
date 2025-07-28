@@ -32,11 +32,11 @@ pipeline {
             steps {
                 script {
                     // Stop and remove old container if exists
-                    sh "docker stop ${CONTAINER_NAME} || true"
-                    sh "docker rm ${CONTAINER_NAME} || true"
+                    bat "docker stop ${CONTAINER_NAME} || true"
+                    bat "docker rm ${CONTAINER_NAME} || true"
 
                     // Run new container
-                    sh "docker run -d -p 8080:8080 --name ${CONTAINER_NAME} ${DOCKER_IMAGE}"
+                    bat "docker run -d -p 8080:8080 --name ${CONTAINER_NAME} ${DOCKER_IMAGE}"
                 }
             }
         }
