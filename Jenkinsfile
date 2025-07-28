@@ -2,54 +2,69 @@ pipeline {
     agent any
 
     environment {
-        MAVEN_HOME = tool 'jenkins-maven' // Set this in Jenkins tools config
-        DOCKER_IMAGE = 'userapp-image'
+        IMAGE_NAME = 'userapp'
         CONTAINER_NAME = 'userapp-container'
+        DOCKER_REGISTRY = '' // optional if pushing to registry
     }
 
     stages {
         stage('Checkout') {
             steps {
+                echo '📥 Checking out source code...'
                 checkout scm
             }
         }
 
-        stage('Build') {
+        stage('Build with Maven') {
             steps {
-                bat "${MAVEN_HOME}/bin/mvn clean install -DskipTests"
+                echo '🔧 Building the Spring Boot project...'
+                bat 'mvn clean package -DskipTests'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    docker.build("${DOCKER_IMAGE}")
-                }
+                echo '🐳 Building Docker image...'
+                bat "docker build -t %IMAGE_NAME% ."
+            }
+        }
+
+        stage('Stop & Remove Existing Container') {
+            steps {
+                echo '🧹 Cleaning up old containers if any...'
+                bat '''
+                docker stop %CONTAINER_NAME%
+                IF %ERRORLEVEL% NEQ 0 (
+                    echo Container may not exist. Ignoring...
+                )
+
+                docker rm %CONTAINER_NAME%
+                IF %ERRORLEVEL% NEQ 0 (
+                    echo Container may already be removed. Ignoring...
+                )
+
+                exit 0
+                '''
             }
         }
 
         stage('Run Docker Container') {
             steps {
-                script {
-                    // Stop and remove old container if exists
-                   bat '''
-                   docker stop userapp-container
-                   IF %ERRORLEVEL% NEQ 0 echo Container may not exist. Ignoring...
-                   '''
-
-                    // Run new container
-                    bat "docker run -d -p 8080:8080 --name ${CONTAINER_NAME} ${DOCKER_IMAGE}"
-                }
+                echo '🚀 Starting Docker container...'
+                bat '''
+                docker run -d -p 8080:8080 --name %CONTAINER_NAME% %IMAGE_NAME%
+                '''
             }
         }
     }
 
     post {
-        failure {
-            echo 'Build Failed ❌'
-        }
         success {
-            echo 'Spring Boot App Deployed in Docker ✅'
+            echo '✅ Build and deployment succeeded!'
+        }
+
+        failure {
+            echo '❌ Build Failed ❌'
         }
     }
 }
