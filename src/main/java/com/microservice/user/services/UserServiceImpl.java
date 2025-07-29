@@ -32,9 +32,10 @@ public class UserServiceImpl implements UserService {
                 .getForEntity("http://localhost:8080/api/departments/" + user.getDepartmentId(),
                         DepartmentEntity.class);
      */
+        //for docker neew to use host.docker.internal in place of localhost
         DepartmentDto dept = webClientBuilder.build()
                 .get()
-                .uri("http://localhost:8080/api/departments/" + user.getDepartmentId())
+                .uri("http://host.docker.internal:8080/api/departments/" + user.getDepartmentId())
                 .retrieve()
                 .bodyToMono(DepartmentDto.class)
                 .block();
