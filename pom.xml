@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.microservice</groupId>
-	<artifactId>department</artifactId>
+	<artifactId>userapp</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>department</name>
 	<description>Department project for Spring Boot</description>
